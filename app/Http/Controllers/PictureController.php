@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Album;
 use App\Picture;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
 {
@@ -22,9 +24,9 @@ class PictureController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Album $album)
     {
-        //
+        return view('pictures.create', compact('album'));
     }
 
     /**
@@ -33,9 +35,22 @@ class PictureController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Album $album)
     {
-        //
+        $request->validate([
+            'name'    => 'required|string|max:255',
+            'picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $path = $request->file('picture')->store('pictures');
+
+        Picture::create([
+            'name'     => $request->name,
+            'path'     => $path,
+            'album_id' => $album->id,
+        ]);
+
+        return redirect()->route('albums.show', $album->id)->with('success', 'Picture added successfully.');
     }
 
     /**
@@ -80,6 +95,9 @@ class PictureController extends Controller
      */
     public function destroy(Picture $picture)
     {
-        //
+        $picture->delete();
+        Storage::delete($picture->path);
+
+        return redirect()->route('albums.show', $picture->album->id)->with('success', 'Picture deleted successfully.');
     }
 }

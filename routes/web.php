@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\PictureController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,5 +20,12 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('albums', AlbumController::class);
+    Route::resource('pictures', PictureController::class);
+
+    Route::post('albums/{album}/deleteOrMove', [AlbumController::class, 'deleteOrMove'])->name('albums.deleteOrMove');
+});
 
 Route::get('/home', 'HomeController@index')->name('home');
