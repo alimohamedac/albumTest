@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
-});
+});*/
 
 Auth::routes();
 
@@ -28,4 +28,4 @@ Route::middleware(['auth'])->group(function () {
     Route::post('albums/{album}/deleteOrMove', [AlbumController::class, 'deleteOrMove'])->name('albums.deleteOrMove');
 });
 
-Route::get('/home', 'HomeController@index')->name('home');
+//Route::get('/home', 'HomeController@index')->name('home');
