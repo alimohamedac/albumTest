@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Picture extends Model
 {
-    protected $fillable = ['name', 'path', 'album_id'];
+    protected $fillable = ['name', 'album_id'];
 
     public function album(): BelongsTo
     {

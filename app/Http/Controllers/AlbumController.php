@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Album;
+use App\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,13 +39,31 @@ class AlbumController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'    => 'required|string|max:255',
+            'pic'     => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+
         ]);
 
         Album::create([
             'name'    => $request->name,
             'user_id' => Auth::id(),
         ]);
+
+        if ($request->hasFile('pic')) {
+
+            $album = Album::latest()->first();
+            $image = $request->file('pic');
+            $name = $image->getClientOriginalName();
+
+            Picture::create([
+                'name'       => $name,
+                'album_id'   => $album->id,
+            ]);
+
+            // move pic
+            $imageName = $request->pic->getClientOriginalName();
+            $request->pic->move(public_path('Pictures/' . $album->id), $imageName);
+        }
 
         return redirect()->route('albums.index')->with('success', 'Album created successfully.');
     }
@@ -57,7 +76,7 @@ class AlbumController extends Controller
      */
     public function show(Album $album)
     {
-        //
+        return redirect()->route('albums.show', compact('album'));
     }
 
     /**
@@ -99,22 +118,20 @@ class AlbumController extends Controller
      * @param  \App\Album  $album
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy(Album $album)
     {
-        $id = $request->album_id;
-        $album = Album::where('id', $id)->first();
+        $all_albums = Album::all();
 
-        if ($album->pictures()->exists()) {
-            return view('albums.confirm_delete', compact('album'));
+        if ($album->pictures) {
+            return view('albums.confirm_delete', compact('album', 'all_albums'));
         }
 
         $album->delete();
         return redirect()->route('albums.index')->with('success', 'Album deleted successfully.');
     }
 
-    public function deleteOrMove(Request $request)
+    public function deleteOrMove($id, Request $request)
     {
-        $id = $request->album_id;
         $album = Album::where('id', $id)->first();
 
         $request->validate([

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Album;
+use App\Models\Invoice;
 use App\Picture;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
@@ -37,20 +40,26 @@ class PictureController extends Controller
      */
     public function store(Request $request, Album $album)
     {
-        $request->validate([
-            'name'    => 'required|string|max:255',
-            'picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        $this->validate($request, [
+            'name' => 'mimes:pdf,jpeg,png,jpg',
+        ], [
+            'name.mimes' => 'صيغة المرفق يجب ان تكون   pdf, jpeg , png , jpg',
         ]);
 
-        $path = $request->file('picture')->store('pictures');
+        $image = $request->file('name');
+        $name = $image->getClientOriginalName();
 
         Picture::create([
-            'name'     => $request->name,
-            'path'     => $path,
-            'album_id' => $album->id,
+            'name'       => $name,
+            'album_id'   => $request->album_id,
         ]);
 
-        return redirect()->route('albums.show', $album->id)->with('success', 'Picture added successfully.');
+        // move pic
+        $imageName = $request->name->getClientOriginalName();
+        $request->name->move(public_path('Attachments/'. $request->album_id), $imageName);
+
+        session()->flash('Add', 'تم اضافة المرفق بنجاح');
+        return back();
     }
 
     /**

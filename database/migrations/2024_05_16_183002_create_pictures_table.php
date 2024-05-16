@@ -17,7 +17,6 @@ class CreatePicturesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('album_id');
             $table->string('name');
-            $table->string('path');
             $table->timestamps();
 
             $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');
