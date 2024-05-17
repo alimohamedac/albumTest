@@ -6,6 +6,7 @@ use App\Album;
 use App\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
@@ -88,8 +89,9 @@ class AlbumController extends Controller
     public function edit($id)
     {
         $album = Album::where('id', $id)->first();
+        $attachments = Picture::where('album_id', $id)->get();
 
-        return view('albums.edit', compact('album'));
+        return view('albums.edit', compact('album', 'attachments'));
     }
 
     /**
@@ -99,9 +101,9 @@ class AlbumController extends Controller
      * @param  \App\Album  $album
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update($id, Request $request)
     {
-        $album = Album::findOrFail($request->album_id);
+        $album = Album::findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -133,6 +135,7 @@ class AlbumController extends Controller
     public function deleteOrMove($id, Request $request)
     {
         $album = Album::where('id', $id)->first();
+        $attachments = Picture::where('album_id', $album->id)->first();
 
         $request->validate([
             'action'          => 'required|string|in:delete,move',
@@ -140,6 +143,9 @@ class AlbumController extends Controller
         ]);
 
         if ($request->action === 'delete') {
+            if (!empty($attachments->album_id)) {
+                Storage::disk('public_uploads')->deleteDirectory($attachments->album_id);  //delete folder of attachments
+            }
             $album->pictures()->delete();
         } elseif ($request->action === 'move') {
             $targetAlbum = Album::find($request->target_album_id);

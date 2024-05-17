@@ -32,11 +32,12 @@ Route::middleware(['auth'])->group(function () {
 
    // Route::get('/pictures', [PictureController::class, 'index'])->name('pictures.index');
     //Route::get('/pictures/create', [PictureController::class, 'create'])->name('pictures.create');
-    Route::post('/pictures', [AlbumController::class, 'store'])->name('pictures.store');
+    Route::post('/pictures', [PictureController::class, 'store'])->name('pictures.store');
     //Route::get('/pictures/{picture}', [AlbumController::class, 'show'])->name('pictures.show');
     //Route::get('/pictures/{picture}/edit', [AlbumController::class, 'edit'])->name('pictures.edit');
-    //Route::put('/pictures/{picture}', [AlbumController::class, 'update'])->name('pictures.update');
+    Route::put('/pictures/{picture}', [AlbumController::class, 'update'])->name('pictures.update');
     //Route::delete('/pictures/{picture}', [AlbumController::class, 'destroy'])->name('pictures.destroy');
+    Route::get('/view_file/{album}/{name}', [PictureController::class, 'openFile'])->name('openFile');
 
     Route::post('albums/{album}/deleteOrMove', [AlbumController::class, 'deleteOrMove'])->name('albums.deleteOrMove');
 });

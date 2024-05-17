@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Album;
-use App\Models\Invoice;
 use App\Picture;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
@@ -56,7 +53,7 @@ class PictureController extends Controller
 
         // move pic
         $imageName = $request->name->getClientOriginalName();
-        $request->name->move(public_path('Attachments/'. $request->album_id), $imageName);
+        $request->name->move(public_path('Pictures/'. $request->album_id), $imageName);
 
         session()->flash('Add', 'تم اضافة المرفق بنجاح');
         return back();
@@ -87,11 +84,10 @@ class PictureController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Picture  $picture
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Picture $picture)
+    public function update(Request $request)
     {
         //
     }
@@ -105,8 +101,16 @@ class PictureController extends Controller
     public function destroy(Picture $picture)
     {
         $picture->delete();
-        Storage::delete($picture->path);
 
-        return redirect()->route('albums.show', $picture->album->id)->with('success', 'Picture deleted successfully.');
+        Storage::disk('public_uploads')->delete($picture->album_id.'/'.$picture->name);
+
+        session()->flash('delete', 'تم حذف المرفق بنجاح');
+        return back();
+    }
+
+    public function openFile($album_id, $name): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $files = Storage::disk('public_uploads')->getDriver()->getAdapter()->applyPathPrefix($album_id.'/'.$name);
+        return response()->file($files);
     }
 }
