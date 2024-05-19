@@ -7,7 +7,7 @@
         <ul>
             @foreach($albums as $album)
                 <li>
-                    <a href="{{ route('albums.show', $album->id) }}">{{ $album->name }}</a>
+                    <a href="{{ route('albums.edit', $album->id) }}">{{ $album->name }}</a>
                     <a href="{{ route('albums.edit', $album->id) }}" class="btn btn-secondary">Edit</a>
                     <form action="{{ route('albums.destroy', $album->id) }}" method="POST" style="display:inline;">
                         @csrf
